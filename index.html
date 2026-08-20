@@ -117,9 +117,10 @@ let sessionKey = null; // key temporal del usuario, recibida vía fragmento tras
 // --- Detectar retorno de la autorización (key en el fragmento de URL) ---
 function checkForReturnedKey() {
   const hash = window.location.hash;
-  if (hash && hash.includes('key=')) {
+  if (hash && hash.includes('api_key=')) {
     const params = new URLSearchParams(hash.substring(1));
-    const key = params.get('key');
+    const key = params.get('api_key'); // confirmado: el fragmento es #api_key=sk_...&state=...
+    // TODO opcional: verificar params.get('state') contra un valor guardado antes del redirect, para protección CSRF
     if (key) {
       sessionKey = key;
       history.replaceState(null, '', window.location.pathname); // limpia el fragmento de la URL
@@ -138,8 +139,8 @@ function setConnected(on) {
 }
 
 document.getElementById('connectBtn').addEventListener('click', () => {
-  // NOTA: parámetros exactos por confirmar contra /.well-known/oauth-authorization-server
-  const authorizeUrl = `${AUTHORIZE_BASE}/authorize?app_key=${encodeURIComponent(APP_KEY)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+  // Confirmado: /authorize espera client_id (no app_key), redirect_uri, scope, budget
+  const authorizeUrl = `${AUTHORIZE_BASE}/authorize?client_id=${encodeURIComponent(APP_KEY)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
   window.location.href = authorizeUrl;
 });
 
